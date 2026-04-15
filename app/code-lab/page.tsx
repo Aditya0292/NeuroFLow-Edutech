@@ -306,12 +306,6 @@ print("SYNCING_NODES...")`
             </div>
           </div>
         </main>
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #2a3143; border-radius: 0px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #69f6b8; }
-      `}</style>
     </div>
   );
 }
