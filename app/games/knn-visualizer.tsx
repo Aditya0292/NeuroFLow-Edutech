@@ -93,10 +93,14 @@ export default function KNNVisualizer() {
   }, [drawCanvas])
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = canvasRef.current!.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    setDots(prev => [...prev, { x, y, cls: placing }])
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    setDots(prev => [...prev, { x, y, cls: placing }]);
   }
 
   // Calculate target data for UI

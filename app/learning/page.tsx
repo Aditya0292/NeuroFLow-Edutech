@@ -1,6 +1,88 @@
+"use client"
 import Link from "next/link";
+import { useState, useRef, useEffect } from "react";
+
+type Message = {
+  sender: "Syn_Intel" | "Operator";
+  time: string;
+  text: string;
+  type?: "warning" | "success" | "info";
+};
 
 export default function LearningHubPage() {
+  const [terminalInput, setTerminalInput] = useState("");
+  const [sessionActive, setSessionActive] = useState(true);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      sender: "Syn_Intel",
+      time: "09:42:11",
+      text: "Warning: Neural weight deviation detected in MSN_082. Recommend increasing learning rate by 0.05.",
+      type: "warning",
+    },
+    {
+      sender: "Operator",
+      time: "09:42:25",
+      text: "Adjusting hyperparameters now. Checking for gradient explosion.",
+    },
+    {
+      sender: "Syn_Intel",
+      time: "09:43:02",
+      text: "Gradient stable. Validation accuracy increased to 92.4%. Mission MSN_082 milestone reached.",
+      type: "success",
+    },
+  ]);
+
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleCommand = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!terminalInput.trim()) return;
+
+    const newMsg: Message = {
+      sender: "Operator",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      text: terminalInput,
+    };
+
+    setMessages((prev) => [...prev, newMsg]);
+    const cmd = terminalInput.toUpperCase().trim();
+    setTerminalInput("");
+
+    // Simple Command Processing
+    setTimeout(() => {
+      let response: Message = {
+        sender: "Syn_Intel",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        text: "COMMAND_RECOGNIZED: EXECUTION_PENDING...",
+        type: "info",
+      };
+
+      if (cmd === "START" || cmd === "INITIATE") {
+        setSessionActive(true);
+        response.text = "SYSTEM_RE-INITIATED. SYNCHRONIZING_COGNITIVE_NODES...";
+        response.type = "success";
+      } else if (cmd === "STOP" || cmd === "HALT") {
+        setSessionActive(false);
+        response.text = "SYSTEM_HALTED. ALL_PROCESSES_SUSPENDED.";
+        response.type = "warning";
+      } else if (cmd === "RESET") {
+        setMessages([]);
+        response.text = "LOG_BUFFER_CLEARED. SYSTEM_IDLE.";
+      } else if (cmd === "HELP") {
+        response.text = "AVAILABLE_COMMANDS: START, STOP, RESET, STATUS, CLEAR";
+      } else {
+        response.text = `UNKNOWN_COMMAND: ${cmd}. TYPE 'HELP' FOR LIST.`;
+        response.type = "warning";
+      }
+
+      setMessages((prev) => [...prev, response]);
+    }, 600);
+  };
+
   return (
     <div className="bg-surface text-on-surface font-body min-h-screen flex flex-col overflow-x-hidden">
       {/* Scanline overlay */}
@@ -16,18 +98,18 @@ export default function LearningHubPage() {
             <Link href="/learning" className="text-primary border-b-2 border-primary pb-1">
               Neural Hub
             </Link>
-            <Link href="#" className="hover:text-primary transition-colors pb-1">
+            <Link href="/games" className="hover:text-primary transition-colors pb-1">
               ML Models
             </Link>
-            <Link href="#" className="hover:text-primary transition-colors pb-1">
+            <Link href="/quiz" className="hover:text-primary transition-colors pb-1">
               Datasets
             </Link>
           </nav>
         </div>
         <div className="flex items-center gap-6">
-          <div className="bg-surface-container border border-primary/20 px-3 py-1.5 flex items-center gap-2 font-mono text-[10px] uppercase text-primary">
-            <span className="material-symbols-outlined text-[14px]">terminal</span>
-            SESSION_ACTIVE: OP_CODE_LAB
+          <div className={`bg-surface-container border transition-colors px-3 py-1.5 flex items-center gap-2 font-mono text-[10px] uppercase ${sessionActive ? "border-primary/20 text-primary" : "border-error/20 text-error"}`}>
+            <span className={`material-symbols-outlined text-[14px] ${sessionActive ? "animate-pulse" : ""}`}>terminal</span>
+            SESSION_{sessionActive ? "ACTIVE" : "HALTED"}: OP_CODE_LAB
           </div>
           <div className="flex items-center gap-3 text-on-surface-variant">
             <span className="material-symbols-outlined hover:text-primary cursor-pointer transition-colors text-sm">notifications</span>
@@ -75,7 +157,7 @@ export default function LearningHubPage() {
             </nav>
           </div>
           <div className="p-6 pb-8">
-            <button className="w-full py-3 bg-primary text-on-primary font-headline font-bold uppercase tracking-widest text-sm hover:bg-primary-dim transition-all shadow-[0_0_15px_rgba(105,246,184,0.15)]">
+            <button className={`w-full py-3 font-headline font-bold uppercase tracking-widest text-sm transition-all shadow-lg ${sessionActive ? "bg-primary text-on-primary shadow-primary/10 hover:bg-primary-dim" : "bg-surface-container-highest text-on-surface-variant cursor-not-allowed opacity-50"}`}>
               Deploy Model
             </button>
             <div className="mt-4 flex flex-col gap-2 font-mono text-[10px] text-on-surface-variant uppercase">
@@ -101,8 +183,8 @@ export default function LearningHubPage() {
                 <div className="flex gap-1">
                   <div className="h-2 w-6 bg-secondary" />
                   <div className="h-2 w-6 bg-secondary" />
-                  <div className="h-2 w-6 bg-secondary/30" />
-                  <div className="h-2 w-6 bg-secondary/30" />
+                  <div className={`h-2 w-6 ${sessionActive ? "bg-secondary/30" : "bg-error/20"}`} />
+                  <div className={`h-2 w-6 ${sessionActive ? "bg-secondary/30" : "bg-error/20"}`} />
                 </div>
               </div>
             </div>
@@ -172,16 +254,16 @@ export default function LearningHubPage() {
                   Cognitive Sync Rate
                 </h4>
                 <div className="flex gap-1 h-3 mb-2">
-                  <div className="flex-1 bg-primary" />
-                  <div className="flex-1 bg-primary" />
-                  <div className="flex-1 bg-primary" />
-                  <div className="flex-1 bg-primary/20 relative overflow-hidden">
-                    <div className="w-1/2 h-full bg-primary" />
+                  <div className={`flex-1 transition-colors ${sessionActive ? "bg-primary" : "bg-error/40"}`} />
+                  <div className={`flex-1 transition-colors ${sessionActive ? "bg-primary" : "bg-error/40"}`} />
+                  <div className={`flex-1 transition-colors ${sessionActive ? "bg-primary" : "bg-error/40"}`} />
+                  <div className="flex-1 bg-surface-container-highest relative overflow-hidden">
+                    <div className={`h-full transition-all ${sessionActive ? "w-1/2 bg-primary" : "w-0 bg-error"}`} />
                   </div>
                 </div>
                 <div className="flex justify-between font-mono text-[10px] uppercase">
-                  <span className="text-primary">82% OPTIMIZED</span>
-                  <span className="text-on-surface-variant">SYNC_STABLE</span>
+                  <span className={sessionActive ? "text-primary" : "text-error"}>{sessionActive ? "82% OPTIMIZED" : "SYNC_INTERRUPTED"}</span>
+                  <span className="text-on-surface-variant">{sessionActive ? "SYNC_STABLE" : "OFFLINE"}</span>
                 </div>
               </div>
             </div>
@@ -189,7 +271,7 @@ export default function LearningHubPage() {
             {/* Right Column: Code Editor */}
             <div className="flex-1 border border-outline-variant/20 bg-[#0d1326] relative overflow-hidden shadow-2xl flex flex-col">
               {/* Backglow element */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/5 blur-[100px] pointer-events-none" />
+              <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full blur-[100px] pointer-events-none transition-colors ${sessionActive ? "bg-primary/5" : "bg-error/5"}`} />
 
               {/* Editor Tabs */}
               <div className="flex border-b border-outline-variant/20 bg-surface-container-low/80">
@@ -208,7 +290,7 @@ export default function LearningHubPage() {
 
               {/* Code Area */}
               <div className="flex-1 p-4 font-mono text-sm leading-loose overflow-auto relative text-on-surface-variant">
-                <div className="flex">
+                <div className={`flex ${sessionActive ? "opacity-100" : "opacity-40 grayscale transition-all"}`}>
                   {/* Line Numbers */}
                   <div className="flex flex-col text-right pr-4 text-outline border-r border-outline-variant/20 select-none mr-4">
                     {Array.from({ length: 18 }).map((_, i) => (
@@ -233,7 +315,7 @@ export default function LearningHubPage() {
                     <span className="text-outline italic"># TODO: Implement backprop delta compression</span>
                     <span>node_cluster = <span className="text-secondary">WeightMatrix</span>(<span className="text-secondary">0x4F2A</span>)</span>
                     <span><span className="text-primary">print</span>(<span className="text-secondary">"SYNCING_NODES..."</span>)</span>
-                    <span className="w-2 h-4 bg-primary animate-pulse inline-block mt-1" />
+                    <span className={`w-2 h-4 bg-primary inline-block mt-1 ${sessionActive ? "animate-pulse" : ""}`} />
                   </div>
                 </div>
 
@@ -246,41 +328,39 @@ export default function LearningHubPage() {
                        <span className="font-headline font-bold text-xs uppercase tracking-widest text-on-surface">AI Tactical Comms</span>
                     </div>
                     <div className="flex gap-2 items-center">
-                      <div className="size-1.5 rounded-full bg-primary animate-pulse" />
+                      <div className={`size-1.5 rounded-full ${sessionActive ? "bg-primary animate-pulse" : "bg-error"}`} />
                       <span className="material-symbols-outlined text-[14px] text-on-surface-variant cursor-pointer">close</span>
                     </div>
                   </div>
                   {/* Chat Area */}
-                  <div className="p-4 flex flex-col gap-4 max-h-[300px] overflow-y-auto">
-                    {/* Message 1 */}
-                    <div className="flex flex-col gap-1">
-                      <div className="font-mono text-[9px] text-on-surface-variant uppercase">Syn_Intel // 09:42:11</div>
-                      <div className="bg-primary/5 border border-primary/20 text-primary font-mono text-xs p-3 leading-relaxed">
-                        Warning: Neural weight deviation detected in MSN_082. Recommend increasing learning rate by 0.05.
+                  <div className="p-4 flex flex-col gap-4 h-[240px] overflow-y-auto custom-scrollbar">
+                    {messages.map((m, i) => (
+                      <div key={i} className={`flex flex-col gap-1 ${m.sender === "Operator" ? "items-end" : ""}`}>
+                        <div className="font-mono text-[9px] text-on-surface-variant uppercase">{m.sender} // {m.time}</div>
+                        <div className={`border font-mono text-xs p-3 leading-relaxed transition-all ${
+                          m.sender === "Operator" 
+                          ? "bg-surface-container-highest border-outline-variant/30 text-on-surface-variant max-w-[85%]" 
+                          : `${m.type === 'warning' ? 'bg-error/5 border-error/20 text-error' : m.type === 'success' ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-surface-container border-outline-variant/20 text-on-surface'}`
+                        }`}>
+                          {m.text}
+                        </div>
                       </div>
-                    </div>
-                    {/* Message 2 */}
-                    <div className="flex flex-col gap-1 items-end">
-                      <div className="font-mono text-[9px] text-on-surface-variant uppercase">Operator // 09:42:25</div>
-                      <div className="bg-surface-container-highest border border-outline-variant/30 text-on-surface-variant font-mono text-xs p-3 leading-relaxed max-w-[85%]">
-                        Adjusting hyperparameters now. Checking for gradient explosion.
-                      </div>
-                    </div>
-                    {/* Message 3 */}
-                    <div className="flex flex-col gap-1">
-                      <div className="font-mono text-[9px] text-on-surface-variant uppercase">Syn_Intel // 09:43:02</div>
-                      <div className="bg-primary/5 border border-primary/20 text-primary font-mono text-xs p-3 leading-relaxed">
-                        Gradient stable. Validation accuracy increased to 92.4%. Mission MSN_082 milestone reached.
-                      </div>
-                    </div>
+                    ))}
+                    <div ref={chatEndRef} />
                   </div>
                   {/* Input area */}
-                  <div className="p-2 border-t border-outline-variant/20 bg-surface-container">
-                    <div className="border border-primary/30 flex items-center px-2 py-1 bg-surface">
+                  <form onSubmit={handleCommand} className="p-2 border-t border-outline-variant/20 bg-surface-container">
+                    <div className="border border-primary/30 flex items-center px-2 py-1 bg-surface focus-within:border-primary transition-colors">
                       <span className="text-secondary font-mono text-xs mr-2">&gt;</span>
-                      <input type="text" placeholder="AWAITING_INPUT..." className="bg-transparent border-none w-full font-mono text-xs text-on-surface outline-none placeholder-on-surface-variant/50 focus:ring-0 p-0" />
+                      <input 
+                        type="text" 
+                        value={terminalInput}
+                        onChange={(e) => setTerminalInput(e.target.value)}
+                        placeholder="AWAITING_INPUT..." 
+                        className="bg-transparent border-none w-full font-mono text-xs text-on-surface outline-none placeholder-on-surface-variant/50 focus:ring-0 p-0 uppercase" 
+                      />
                     </div>
-                  </div>
+                  </form>
                 </div>
 
               </div>
@@ -293,7 +373,7 @@ export default function LearningHubPage() {
                 </div>
                 <div className="flex gap-4">
                   <span>PYTHON 3.11</span>
-                  <span>SYNC_ACTIVE</span>
+                  <span className={sessionActive ? "text-primary" : "text-error"}>SYNC_{sessionActive ? "ACTIVE" : "HALTED"}</span>
                 </div>
               </div>
             </div>
@@ -301,6 +381,13 @@ export default function LearningHubPage() {
           </div>
         </main>
       </div>
+
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #41475b; border-radius: 2px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #69f6b8; }
+      `}</style>
     </div>
   );
 }
