@@ -24,6 +24,11 @@ export const metadata: Metadata = {
   title: "NeuroFlow | Master the Machine",
   description:
     "Deploy high-frequency neural architectures in a sovereign tactical environment.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
