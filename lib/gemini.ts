@@ -37,20 +37,63 @@ const geminiProvider: LlmProvider = {
   }
 }
 
-// Future fallback slots. Implement when keys/providers are added.
 const openrouterProvider: LlmProvider = {
   name: "openrouter",
   isEnabled: () => Boolean(process.env.OPENROUTER_API_KEY),
-  async generateText() {
-    throw new Error("OPENROUTER_NOT_IMPLEMENTED")
+  async generateText(prompt: string) {
+    const apiKey = process.env.OPENROUTER_API_KEY
+    if (!apiKey) throw new Error("OPENROUTER_API_KEY is missing")
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+        "X-Title": "Vibeathon TeamAlpha"
+      },
+      body: JSON.stringify({
+        model: process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }]
+      })
+    })
+
+    if (!response.ok) {
+      const err = await response.text()
+      throw new Error(`OpenRouter error ${response.status}: ${err}`)
+    }
+
+    const data = await response.json() as { choices: { message: { content: string } }[] }
+    return data.choices[0]?.message?.content ?? ""
   }
 }
 
 const grokProvider: LlmProvider = {
   name: "grok",
   isEnabled: () => Boolean(process.env.GROK_API_KEY),
-  async generateText() {
-    throw new Error("GROK_NOT_IMPLEMENTED")
+  async generateText(prompt: string) {
+    const apiKey = process.env.GROK_API_KEY
+    if (!apiKey) throw new Error("GROK_API_KEY is missing")
+
+    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: process.env.GROK_MODEL ?? "grok-3-mini",
+        messages: [{ role: "user", content: prompt }]
+      })
+    })
+
+    if (!response.ok) {
+      const err = await response.text()
+      throw new Error(`Grok error ${response.status}: ${err}`)
+    }
+
+    const data = await response.json() as { choices: { message: { content: string } }[] }
+    return data.choices[0]?.message?.content ?? ""
   }
 }
 

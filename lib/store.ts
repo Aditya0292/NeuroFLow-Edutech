@@ -1,4 +1,5 @@
 import type { LeaderboardEntry, User } from "@/types"
+import bcrypt from "bcryptjs"
 
 const seededUsers = new Map<string, User>([
   [
@@ -76,11 +77,17 @@ const seededUsers = new Map<string, User>([
 declare global {
   // eslint-disable-next-line no-var
   var __vibeathonUsers: Map<string, User> | undefined
+  // eslint-disable-next-line no-var
+  var __vibeathonUserPasswords: Map<string, string> | undefined
 }
 
 const users = globalThis.__vibeathonUsers ?? new Map<string, User>(seededUsers)
 if (!globalThis.__vibeathonUsers) {
   globalThis.__vibeathonUsers = users
+}
+const userPasswords = globalThis.__vibeathonUserPasswords ?? new Map<string, string>()
+if (!globalThis.__vibeathonUserPasswords) {
+  globalThis.__vibeathonUserPasswords = userPasswords
 }
 
 function normalizeEmail(email: string) {
@@ -142,5 +149,18 @@ export function getLeaderboard(): LeaderboardEntry[] {
       level: user.level,
       badges: [...user.badges]
     }))
+}
+
+export async function setUserPassword(email: string, password: string): Promise<void> {
+  const normalized = normalizeEmail(email)
+  const hash = await bcrypt.hash(password, 10)
+  userPasswords.set(normalized, hash)
+}
+
+export async function verifyUserPassword(email: string, password: string): Promise<boolean> {
+  const normalized = normalizeEmail(email)
+  const hash = userPasswords.get(normalized)
+  if (!hash) return false
+  return bcrypt.compare(password, hash)
 }
 
