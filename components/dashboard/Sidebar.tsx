@@ -1,13 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navItems = [
-  { label: "Dashboard", icon: "dashboard", href: "/dashboard", active: true },
-  { label: "Missions", icon: "track_changes", href: "/dashboard/missions", active: false },
-  { label: "Armory", icon: "bolt", href: "/dashboard/armory", active: false },
-  { label: "Comms", icon: "forum", href: "/dashboard/comms", active: false },
+  { label: "Dashboard", icon: "dashboard", href: "/dashboard" },
+  { label: "Code Lab", icon: "terminal", href: "/code-lab" },
+  { label: "Neural Hub", icon: "hub", href: "/games" },
+  { label: "Comms", icon: "forum", href: "/dashboard/comms" },
 ];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
     <div className="glass-panel w-72 h-screen fixed left-0 top-0 border-r border-primary/20 flex flex-col justify-between p-6 z-10 hidden md:flex">
       <div className="flex flex-col gap-8">
@@ -38,35 +43,39 @@ export default function Sidebar() {
 
         {/* Nav */}
         <nav className="flex flex-col gap-2 mt-4">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`flex items-center gap-4 px-4 py-3 border-l-2 transition-all group ${
-                item.active
-                  ? "bg-surface-container-highest border-primary"
-                  : "border-transparent hover:bg-surface-container-high hover:border-outline-variant"
-              }`}
-            >
-              <span
-                className={`material-symbols-outlined ${
-                  item.active ? "text-primary" : "text-on-surface-variant group-hover:text-on-surface"
-                }`}
-                style={item.active ? { fontVariationSettings: "'FILL' 1" } : undefined}
-              >
-                {item.icon}
-              </span>
-              <span
-                className={`font-headline uppercase text-sm tracking-wide ${
-                  item.active
-                    ? "text-on-surface"
-                    : "text-on-surface-variant group-hover:text-on-surface"
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
+            
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`flex items-center gap-4 px-4 py-3 border-l-2 transition-all group ${
+                  isActive
+                    ? "bg-surface-container-highest border-primary"
+                    : "border-transparent hover:bg-surface-container-high hover:border-outline-variant"
                 }`}
               >
-                {item.label}
-              </span>
-            </Link>
-          ))}
+                <span
+                  className={`material-symbols-outlined ${
+                    isActive ? "text-primary" : "text-on-surface-variant group-hover:text-on-surface"
+                  }`}
+                  style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                >
+                  {item.icon}
+                </span>
+                <span
+                  className={`font-headline uppercase text-sm tracking-wide ${
+                    isActive
+                      ? "text-on-surface"
+                      : "text-on-surface-variant group-hover:text-on-surface"
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
 

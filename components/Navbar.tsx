@@ -12,13 +12,17 @@ export default function Navbar() {
 
       {/* Nav Links */}
       <div className="hidden md:flex items-center gap-8">
-        {["Network", "Vault", "Nodes"].map((item) => (
+        {[
+          { label: "Code Lab", route: "/code-lab" },
+          { label: "Neural Hub", route: "/games" },
+          { label: "Vault", route: "#" }
+        ].map((item) => (
           <Link
-            key={item}
-            href="#"
+            key={item.label}
+            href={item.route}
             className="text-emerald-900/60 font-headline uppercase tracking-widest text-sm hover:text-emerald-300 hover:bg-emerald-500/10 px-3 py-1 transition-all"
           >
-            {item}
+            {item.label}
           </Link>
         ))}
       </div>
