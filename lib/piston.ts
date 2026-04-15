@@ -72,62 +72,54 @@ export function validateChallenge(output: string, expected: string): boolean {
 
 export const challenges: CodingChallenge[] = [
   {
-    id: "ch1",
-    title: "Mean Calculator",
-    description: "Calculate the mean of a list [1,2,3,4,5]. Print the result.",
-    starterCode: "numbers = [1, 2, 3, 4, 5]\n# Calculate mean and print it\n",
-    expectedOutput: "3.0",
-    difficulty: "Beginner",
-    xp: 100,
-    hint: "Sum all numbers then divide by count"
-  },
-  {
-    id: "ch2",
-    title: "Train/Test Split",
-    description:
-      "Split a list of 10 items into 80% train and 20% test. Print the length of each.",
-    starterCode:
-      "data = list(range(10))\n# Split into train (80%) and test (20%)\n# Print: train length, test length\n",
-    expectedOutput: "8\n2",
-    difficulty: "Beginner",
-    xp: 120,
-    hint: "Use list slicing. Train = first 80%, Test = last 20%"
-  },
-  {
-    id: "ch3",
-    title: "Normalize Data",
-    description:
-      "Normalize the list [10, 20, 30, 40, 50] using min-max normalization. Print each value rounded to 1 decimal.",
-    starterCode:
-      "data = [10, 20, 30, 40, 50]\n# Apply min-max normalization\n# Print each normalized value\n",
-    expectedOutput: "0.0\n0.2\n0.5\n0.8\n1.0",
+    id: "ch_gd_01",
+    title: "Gradient Descent Step",
+    description: "Perform a single weight update using Gradient Descent. Current weight w=2.0, gradient g=0.5, learning rate lr=0.1. Print the unique updated weight rounded to 2 decimals.",
+    starterCode: "w = 2.0\ng = 0.5\nlr = 0.1\n\n# Calculate updated weight: w = w - lr * g\n# Print result\n",
+    expectedOutput: "1.95",
     difficulty: "Intermediate",
-    xp: 150,
-    hint: "Formula: (x - min) / (max - min)"
+    xp: 250,
+    hint: "New Value = Old Value - (Rate * Gradient)"
   },
   {
-    id: "ch4",
-    title: "Euclidean Distance",
-    description:
-      "Calculate Euclidean distance between points (1,2) and (4,6). Print rounded to 2 decimals.",
-    starterCode:
-      "import math\np1 = (1, 2)\np2 = (4, 6)\n# Calculate and print Euclidean distance\n",
-    expectedOutput: "5.0",
-    difficulty: "Intermediate",
-    xp: 150,
-    hint: "sqrt((x2-x1)² + (y2-y1)²)"
-  },
-  {
-    id: "ch5",
-    title: "Sigmoid Function",
-    description:
-      "Implement sigmoid function and print sigmoid(0), sigmoid(1), sigmoid(-1). Round to 4 decimals.",
-    starterCode:
-      "import math\ndef sigmoid(x):\n    # implement sigmoid\n    pass\n\nprint(sigmoid(0))\nprint(sigmoid(1))\nprint(sigmoid(-1))\n",
-    expectedOutput: "0.5\n0.7311\n0.2689",
+    id: "ch_loss_01",
+    title: "Binary Cross-Entropy Loss",
+    description: "Calculate BCE Loss for a prediction y_hat=0.8 given true label y=1. Formula: -[y*log(y_hat) + (1-y)*log(1-y_hat)]. Print result rounded to 4 decimals.",
+    starterCode: "import math\ny = 1\ny_hat = 0.8\n\n# Calculate loss using natural log (math.log)\n",
+    expectedOutput: "0.2231",
     difficulty: "Advanced",
-    xp: 200,
-    hint: "sigmoid(x) = 1 / (1 + e^(-x))"
+    xp: 400,
+    hint: "Recall that log(1-y) is irrelevant if y=1"
+  },
+  {
+    id: "ch_neuron_01",
+    title: "Neuron Forward Pass",
+    description: "Compute the output of a single neuron. Inputs x=[0.5, 1.2], Weights w=[0.4, -0.6], Bias b=0.1. Use ReLU activation. Print final output.",
+    starterCode: "x = [0.5, 1.2]\nw = [0.4, -0.6]\nb = 0.1\n\n# Calculate z = sum(x_i * w_i) + b\n# Apply ReLU(z) = max(0, z)\n",
+    expectedOutput: "0.0",
+    difficulty: "Intermediate",
+    xp: 300,
+    hint: "0.5*0.4 + 1.2*-0.6 + 0.1 = -0.42. ReLU(-0.42) = ?"
+  },
+  {
+    id: "ch_softmax_01",
+    title: "Softmax Probability",
+    description: "Convert logit scores [2.0, 1.0, 0.1] into probabilities using Softmax. Print the probability of the first class rounded to 4 decimals.",
+    starterCode: "import math\nlogits = [2.0, 1.0, 0.1]\n\n# formula: exp(logit_i) / sum(exp(logits))\n",
+    expectedOutput: "0.659",
+    difficulty: "Advanced",
+    xp: 500,
+    hint: "Calculate sum of exponentials first"
+  },
+  {
+    id: "ch_mse_01",
+    title: "MSE Gradient Calculation",
+    description: "Calculate the gradient of Mean Squared Error with respect to prediction y_hat. y=5.0, y_hat=4.2. Formula for single point: 2 * (y_hat - y). Print the result.",
+    starterCode: "y = 5.0\ny_hat = 4.2\n\n# Calculate gradient and print\n",
+    expectedOutput: "-1.6",
+    difficulty: "Intermediate",
+    xp: 350,
+    hint: "Derive loss = (y_hat - y)^2"
   }
 ]
 
@@ -136,10 +128,7 @@ type PistonRunInput = {
   source: string
 }
 
-// Backward-compatible wrapper for existing callers.
 export async function runOnPiston(input: PistonRunInput): Promise<string> {
-  void input.language
   const result = await executeCode(input.source)
   return result.output
 }
-
