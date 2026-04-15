@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard - Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&amp;family=Inter:wght@400..700&amp;family=JetBrains+Mono:wght@400..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "error-container": "#9f0519",
+                "on-background": "#dfe4fe",
+                "on-primary-container": "#002919",
+                "primary-fixed": "#69f6b8",
+                "on-tertiary-fixed-variant": "#003d5a",
+                "tertiary-fixed-dim": "#25adf1",
+                "inverse-on-surface": "#4f5469",
+                "surface-bright": "#222b47",
+                "on-surface": "#dfe4fe",
+                "surface-tint": "#69f6b8",
+                "primary-fixed-dim": "#58e7ab",
+                "secondary-container": "#446900",
+                "surface-container-high": "#171f36",
+                "on-primary-fixed-variant": "#006544",
+                "on-error": "#490006",
+                "background": "#070d1f",
+                "on-tertiary-fixed": "#001a29",
+                "surface-container-lowest": "#000000",
+                "on-secondary-container": "#ecffc9",
+                "secondary": "#b2f746",
+                "surface-dim": "#070d1f",
+                "on-primary-fixed": "#00452d",
+                "tertiary-container": "#34b5fa",
+                "surface-container-low": "#0c1326",
+                "primary-container": "#06b77f",
+                "inverse-primary": "#006d4a",
+                "on-secondary-fixed": "#2d4700",
+                "primary-dim": "#58e7ab",
+                "on-secondary": "#3b5b00",
+                "error": "#ff716c",
+                "surface-container-highest": "#1c253e",
+                "on-tertiary": "#003b56",
+                "tertiary": "#61c2ff",
+                "surface-container": "#11192e",
+                "outline": "#6f758b",
+                "secondary-dim": "#a5e837",
+                "outline-variant": "#41475b",
+                "tertiary-fixed": "#40bbff",
+                "secondary-fixed": "#b2f746",
+                "tertiary-dim": "#17a8ec",
+                "primary": "#69f6b8",
+                "inverse-surface": "#faf8ff",
+                "on-primary": "#005a3c",
+                "secondary-fixed-dim": "#a5e837",
+                "surface": "#070d1f",
+                "on-secondary-fixed-variant": "#426500",
+                "on-error-container": "#ffa8a3",
+                "surface-variant": "#1c253e",
+                "error-dim": "#d7383b",
+                "on-tertiary-container": "#003047",
+                "on-surface-variant": "#a5aac2"
+        },
+        "borderRadius": {
+                "DEFAULT": "0px",
+                "lg": "0px",
+                "xl": "0px",
+                "full": "0px"
+        },
+        "spacing": {},
+        "fontFamily": {
+                "headline": [
+                        "Space Grotesk", "sans-serif"
+                ],
+                "body": [
+                        "Inter", "sans-serif"
+                ],
+                "mono": [
+                        "JetBrains Mono", "monospace"
+                ],
+                "label": [
+                        "Inter", "sans-serif"
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+    /* Scanlines */
+    body::before {
+        content: " ";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        z-index: 999;
+        background-size: 100% 2px, 3px 100%;
+        pointer-events: none;
+        opacity: 0.15;
+    }
+    
+    /* Segmented Progress */
+    .segmented-bar {
+        display: flex;
+        gap: 2px;
+        height: 12px;
+    }
+    .segment {
+        flex: 1;
+        background-color: theme('colors.surface-container-highest');
+    }
+    .segment.filled {
+        background-color: theme('colors.secondary');
+    }
+
+    /* Input blinking cursor */
+    .blinking-cursor::after {
+        content: '_';
+        animation: blink 1s step-start infinite;
+        color: theme('colors.primary');
+    }
+    @keyframes blink {
+        50% { opacity: 0; }
+    }
+
+    /* Kinetic Trigger Button Hover */
+    .btn-kinetic:hover {
+        box-shadow: 0 0 4px theme('colors.primary');
+        border-bottom: 2px solid theme('colors.secondary');
+    }
+
+    /* Glassmorphism */
+    .glass-panel {
+        background-color: rgba(12, 19, 38, 0.7); /* surface-container-low with opacity */
+        backdrop-filter: blur(20px);
+    }
+
+    /* Angled Dock / Clipped Corner (approximation with borders) */
+    .clipped-tr {
+        clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+    }
+
+    /* Ghost Border */
+    .ghost-border {
+        border: 1px solid rgba(65, 71, 91, 0.15); /* outline-variant at 15% */
+    }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen flex overflow-x-hidden">
+<!-- Shared TopNavBar (Sidebar variant for Desktop) -->
+<div class="glass-panel w-72 h-screen fixed left-0 top-0 border-r border-primary/20 flex flex-col justify-between p-6 z-10 hidden md:flex">
+<div class="flex flex-col gap-8">
+<!-- Header -->
+<header class="flex items-center gap-3">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-on-surface text-xl font-headline font-bold uppercase tracking-[0.05em]">Cmd_Center</h2>
+</header>
+<!-- User Profile -->
+<div class="flex gap-4 items-center bg-surface-container-high p-4 border-l-2 border-primary">
+<div class="bg-center bg-no-repeat aspect-square bg-cover size-12 ghost-border" data-alt="Stylized glowing avatar geometric shape on dark background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCA_JPw_8GHgKs79QMcrLBUHcXICyU07cZaxEkUXMgdloylDRNtNQdV6S9u8-uCDZsGrWwYMt0pHyF5XHuuvDpnZuZJTcprKSJdNzosWJyRpTVEzPg5StIHmods7w7Iv_V4PkXrCg4stNj3mNHb8-BsfCx1tYG3NkFBLL4bnCXwYfzIBrzBTaTGQFIuGzNPVVpyNOUkbWVa-NT-s7yq2r3xcplKz8U7Nup00UwFR4BsY9nQNPBYVQhgJDoCsEJp58TiMfDsZHnN99c");'></div>
+<div class="flex flex-col">
+<h1 class="text-on-surface font-headline font-medium uppercase text-sm tracking-wider">Operative 01</h1>
+<p class="text-secondary font-mono text-xs">SYS.ADMIN</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-4 px-4 py-3 bg-surface-container-highest border-l-2 border-primary group" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="dashboard" data-weight="fill" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-on-surface font-headline uppercase text-sm tracking-wide group-hover:text-primary transition-colors">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 hover:bg-surface-container-high border-l-2 border-transparent hover:border-outline-variant transition-all group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface" data-icon="track_changes">track_changes</span>
+<span class="text-on-surface-variant font-headline uppercase text-sm tracking-wide group-hover:text-on-surface">Missions</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 hover:bg-surface-container-high border-l-2 border-transparent hover:border-outline-variant transition-all group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface" data-icon="bolt">bolt</span>
+<span class="text-on-surface-variant font-headline uppercase text-sm tracking-wide group-hover:text-on-surface">Armory</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 hover:bg-surface-container-high border-l-2 border-transparent hover:border-outline-variant transition-all group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface" data-icon="forum">forum</span>
+<span class="text-on-surface-variant font-headline uppercase text-sm tracking-wide group-hover:text-on-surface">Comms</span>
+</a>
+</nav>
+</div>
+<!-- System Status Footer -->
+<div class="mt-auto pt-6 border-t ghost-border">
+<div class="flex justify-between items-center text-xs font-mono">
+<span class="text-on-surface-variant">SYS_STAT:</span>
+<span class="text-secondary">ONLINE</span>
+</div>
+<div class="flex justify-between items-center text-xs font-mono mt-2">
+<span class="text-on-surface-variant">UPLINK:</span>
+<span class="text-primary">SECURE</span>
+</div>
+</div>
+</div>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-72 p-6 lg:p-10 flex flex-col gap-8 min-h-screen">
+<!-- Top Header Bar (Mobile + Search) -->
+<div class="flex justify-between items-center w-full pb-4 border-b ghost-border">
+<h1 class="text-3xl font-headline font-bold uppercase tracking-[0.05em] text-on-surface md:hidden">Dashboard</h1>
+<div class="hidden md:block">
+<!-- Terminal Prompt Input -->
+<div class="flex items-center gap-2 border-b border-outline-variant/50 focus-within:border-primary pb-1 w-64 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="terminal">terminal</span>
+<input class="bg-transparent border-none text-on-surface font-mono text-sm focus:ring-0 w-full p-0 placeholder-on-surface-variant/50 focus-within:blinking-cursor" placeholder="Enter command..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-surface-container-highest p-2 hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="bg-surface-container-highest p-2 hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface md:hidden">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</div>
+<!-- Dashboard Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Center Column: Radar & Progress (Span 8) -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<!-- Skill Radar Panel -->
+<div class="bg-surface-container-low p-6 lg:p-8 ghost-border clipped-tr relative overflow-hidden group">
+<!-- Decorative Corner Accents -->
+<div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary"></div>
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-on-surface-variant font-mono text-xs uppercase mb-1">Telemetry</h3>
+<h2 class="text-2xl font-headline font-bold uppercase tracking-wide text-on-surface">Skill Radar <span class="text-primary font-mono text-sm ml-2">[ML CAPABILITIES]</span></h2>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant font-mono text-xs uppercase mb-1">Current Level</p>
+<p class="text-secondary font-headline font-bold text-3xl">42</p>
+</div>
+</div>
+<!-- Glow effect background -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[50px] pointer-events-none"></div>
+<!-- Radar Chart Container -->
+<div class="w-full flex justify-center items-center py-8 min-h-[300px] relative z-10">
+<!-- Placeholder for actual chart, using SVG to simulate tactical radar -->
+<div class="relative size-[280px]">
+<!-- Concentric circles -->
+<div class="absolute inset-0 rounded-full border border-outline-variant/30"></div>
+<div class="absolute inset-[35px] rounded-full border border-outline-variant/30"></div>
+<div class="absolute inset-[70px] rounded-full border border-outline-variant/30"></div>
+<div class="absolute inset-[105px] rounded-full border border-outline-variant/30"></div>
+<!-- Axes -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-full h-[1px] bg-outline-variant/30 rotate-0"></div>
+<div class="w-full h-[1px] bg-outline-variant/30 rotate-45 absolute"></div>
+<div class="w-full h-[1px] bg-outline-variant/30 rotate-90 absolute"></div>
+<div class="w-full h-[1px] bg-outline-variant/30 -rotate-45 absolute"></div>
+</div>
+<!-- Data Polygon -->
+<svg class="absolute inset-0 w-full h-full" viewbox="0 0 280 280">
+<polygon fill="rgba(105, 246, 184, 0.15)" points="140,20 220,90 240,180 160,240 60,200 40,110" stroke="#69f6b8" stroke-width="2"></polygon>
+<!-- Data points -->
+<circle cx="140" cy="20" fill="#b2f746" r="4"></circle>
+<circle cx="220" cy="90" fill="#b2f746" r="4"></circle>
+<circle cx="240" cy="180" fill="#b2f746" r="4"></circle>
+<circle cx="160" cy="240" fill="#b2f746" r="4"></circle>
+<circle cx="60" cy="200" fill="#b2f746" r="4"></circle>
+<circle cx="40" cy="110" fill="#b2f746" r="4"></circle>
+</svg>
+<!-- Labels -->
+<div class="absolute top-[-25px] left-1/2 -translate-x-1/2 text-primary font-mono text-[10px] uppercase">Python</div>
+<div class="absolute top-[80px] right-[-45px] text-primary font-mono text-[10px] uppercase">TensorFlow</div>
+<div class="absolute bottom-[80px] right-[-35px] text-primary font-mono text-[10px] uppercase">PyTorch</div>
+<div class="absolute bottom-[-25px] left-1/2 -translate-x-1/2 text-primary font-mono text-[10px] uppercase">NLP</div>
+<div class="absolute bottom-[80px] left-[-35px] text-primary font-mono text-[10px] uppercase">Computer Vision</div>
+<div class="absolute top-[80px] left-[-45px] text-primary font-mono text-[10px] uppercase">Data Eng</div>
+</div>
+</div>
+<div class="flex justify-between items-center mt-6 pt-4 border-t border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="trending_up">trending_up</span>
+<span class="text-on-surface-variant font-mono text-xs">+15% EFFICIENCY THIS CYCLE</span>
+</div>
+<button class="bg-primary text-on-primary font-headline uppercase font-bold text-sm px-6 py-2 btn-kinetic transition-all">
+                        Calibrate
+                    </button>
+</div>
+</div>
+<!-- Level Progress Segmented Bar -->
+<div class="bg-surface-container-low p-6 ghost-border">
+<div class="flex justify-between items-end mb-4">
+<div>
+<h3 class="text-on-surface font-headline font-bold uppercase tracking-wide">Level 42 Advancement</h3>
+<p class="text-on-surface-variant font-mono text-xs mt-1">XP REQ FOR LVL 43: <span class="text-secondary">2500</span></p>
+</div>
+<div class="text-right">
+<span class="text-primary font-mono text-xl">75%</span>
+</div>
+</div>
+<!-- Segmented Progress Bar (20 segments = 5% each. 75% = 15 filled) -->
+<div class="segmented-bar">
+<div class="segment filled"></div><div class="segment filled"></div><div class="segment filled"></div><div class="segment filled"></div><div class="segment filled"></div>
+<div class="segment filled"></div><div class="segment filled"></div><div class="segment filled"></div><div class="segment filled"></div><div class="segment filled"></div>
+<div class="segment filled"></div><div class="segment filled"></div><div class="segment filled"></div><div class="segment filled"></div><div class="segment filled"></div>
+<div class="segment"></div><div class="segment"></div><div class="segment"></div><div class="segment"></div><div class="segment"></div>
+</div>
+</div>
+</div>
+<!-- Right Column: Mission Log (Span 4) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<div class="bg-surface-container-low h-full ghost-border p-6 flex flex-col">
+<div class="flex items-center justify-between mb-6 pb-2 border-b border-outline-variant/30">
+<h3 class="text-on-surface font-headline font-bold uppercase tracking-wide text-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="list_alt">list_alt</span>
+                        Mission Log
+                    </h3>
+<span class="bg-primary/10 text-primary font-mono text-[10px] px-2 py-1 uppercase border border-primary/20">Archived</span>
+</div>
+<div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
+<!-- Log Item 1 -->
+<div class="bg-surface-container-highest p-4 border-l-2 border-secondary relative group cursor-pointer hover:bg-surface-bright transition-colors">
+<div class="absolute top-2 right-2 text-on-surface-variant font-mono text-[10px]">T-MINUS 2D</div>
+<h4 class="text-on-surface font-headline font-medium text-sm mb-1 group-hover:text-primary transition-colors">Neural Net Optimization</h4>
+<p class="text-on-surface-variant text-xs mb-3">Reduced model latency by 18% during inference phase.</p>
+<div class="flex gap-2">
+<span class="bg-surface p-1 text-[10px] font-mono text-secondary uppercase border border-outline-variant/20">Success</span>
+<span class="bg-surface p-1 text-[10px] font-mono text-tertiary-fixed uppercase border border-outline-variant/20">+450 XP</span>
+</div>
+</div>
+<!-- Log Item 2 -->
+<div class="bg-surface-container-highest p-4 border-l-2 border-secondary relative group cursor-pointer hover:bg-surface-bright transition-colors">
+<div class="absolute top-2 right-2 text-on-surface-variant font-mono text-[10px]">T-MINUS 5D</div>
+<h4 class="text-on-surface font-headline font-medium text-sm mb-1 group-hover:text-primary transition-colors">Data Pipeline Refactoring</h4>
+<p class="text-on-surface-variant text-xs mb-3">Streamlined ETL processes for unstructured training sets.</p>
+<div class="flex gap-2">
+<span class="bg-surface p-1 text-[10px] font-mono text-secondary uppercase border border-outline-variant/20">Success</span>
+<span class="bg-surface p-1 text-[10px] font-mono text-tertiary-fixed uppercase border border-outline-variant/20">+600 XP</span>
+</div>
+</div>
+<!-- Log Item 3 -->
+<div class="bg-surface-container-highest p-4 border-l-2 border-error relative group cursor-pointer hover:bg-surface-bright transition-colors">
+<div class="absolute top-2 right-2 text-on-surface-variant font-mono text-[10px]">T-MINUS 8D</div>
+<h4 class="text-on-surface font-headline font-medium text-sm mb-1 group-hover:text-error transition-colors">Hyperparameter Tuning</h4>
+<p class="text-on-surface-variant text-xs mb-3">Convergence failed on primary cluster. Rollback initiated.</p>
+<div class="flex gap-2">
+<span class="bg-surface p-1 text-[10px] font-mono text-error uppercase border border-outline-variant/20">Failed</span>
+<span class="bg-surface p-1 text-[10px] font-mono text-on-surface-variant uppercase border border-outline-variant/20">+50 XP</span>
+</div>
+</div>
+<!-- Log Item 4 -->
+<div class="bg-surface-container-highest p-4 border-l-2 border-secondary relative group cursor-pointer hover:bg-surface-bright transition-colors opacity-70">
+<div class="absolute top-2 right-2 text-on-surface-variant font-mono text-[10px]">T-MINUS 12D</div>
+<h4 class="text-on-surface font-headline font-medium text-sm mb-1 group-hover:text-primary transition-colors">Computer Vision Module</h4>
+<p class="text-on-surface-variant text-xs mb-3">Deployed anomaly detection for edge devices.</p>
+<div class="flex gap-2">
+<span class="bg-surface p-1 text-[10px] font-mono text-secondary uppercase border border-outline-variant/20">Success</span>
+<span class="bg-surface p-1 text-[10px] font-mono text-tertiary-fixed uppercase border border-outline-variant/20">+850 XP</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 py-3 border border-outline-variant/50 text-on-surface-variant font-mono text-xs uppercase hover:bg-surface-container-highest hover:text-on-surface transition-colors">
+                    Access Full Archive
+                </button>
+</div>
+</div>
+</div>
+</main>
+<style>
+    /* Custom Scrollbar for Mission Log to match tactical theme */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: theme('colors.surface-dim'); 
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: theme('colors.outline-variant'); 
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: theme('colors.primary'); 
+    }
+</style>
+</body></html>
