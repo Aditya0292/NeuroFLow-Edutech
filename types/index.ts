@@ -1,10 +1,13 @@
 export interface User {
   id: string
   name: string
+  email: string
   xp: number
   level: string
   streak: number
   badges: string[]
+  completedModules: string[]
+  lastLogin: string
 }
 
 export interface QuizResult {
@@ -27,9 +30,20 @@ export interface GameResult {
 }
 
 export interface LeaderboardEntry {
+  rank: number
   name: string
   xp: number
   level: string
   badges: string[]
+}
+
+export interface LearningModule {
+  id: string
+  title: string
+  level: "Beginner" | "Intermediate" | "Advanced"
+  description: string
+  concepts: string[]
+  examples: string[]
+  quizTopic: string
 }
 

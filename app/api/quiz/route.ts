@@ -1,18 +1,44 @@
 import { NextResponse } from "next/server"
-import type { QuizResult } from "@/types"
-import { awardXp } from "@/lib/xp"
+import { generateQuiz, type QuizQuestion } from "@/lib/gemini"
 
-export async function POST(req: Request) {
-  // Placeholder backend: wire your quiz evaluation here.
-  const body = await req.json().catch(() => ({}))
-  const score = typeof body?.score === "number" ? body.score : 0
+const QUIZ_TOPICS = [
+  "Linear Regression",
+  "Decision Trees",
+  "Neural Networks",
+  "K-Means Clustering",
+  "Random Forest",
+  "SVM",
+  "Gradient Descent",
+  "Overfitting",
+  "Data Preprocessing",
+  "Backpropagation"
+]
 
-  const result: QuizResult = {
-    score,
-    xp_earned: awardXp({ kind: "quiz", score }),
-    explanation: ""
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const topic = searchParams.get("topic")?.trim()
+    const difficulty = searchParams.get("difficulty")?.trim() || "Beginner"
+
+    if (!topic) {
+      return NextResponse.json({
+        topics: QUIZ_TOPICS,
+        questions: [] as QuizQuestion[]
+      })
+    }
+
+    const questions = await generateQuiz(topic, difficulty)
+    return NextResponse.json({ questions })
+  } catch (error) {
+    console.error("GET /api/quiz failed:", error)
+    return NextResponse.json(
+      {
+        questions: [] as QuizQuestion[],
+        topics: QUIZ_TOPICS,
+        error: "Unable to fetch quiz data"
+      },
+      { status: 500 }
+    )
   }
-
-  return NextResponse.json(result)
 }
 

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
-import { store } from "@/lib/store"
+import { getAllUsers } from "@/lib/store"
 
 export async function GET() {
-  // Placeholder: returns current user state from in-memory store.
-  return NextResponse.json(store.getUser())
+  // Placeholder: returns top user from in-memory store.
+  const user = getAllUsers()[0] ?? null
+  return NextResponse.json(user)
 }
 
