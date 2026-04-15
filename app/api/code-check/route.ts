@@ -3,18 +3,29 @@ import { geminiGenerate } from '@/lib/gemini';
 
 export async function POST(req: Request) {
   try {
-    const { code, challenge } = await req.json();
+    const { code, challenge, output, error } = await req.json();
 
     const prompt = `
 ROLE: You are an Elite tactical AI unit named "SYN_INTEL" operating in NeuroFlow.
-TASK: Review the following Python neural network code for the mission "${challenge}" submitted by Operator 01.
-Analyze the code and determine if it represents a valid step toward building or optimizing a neural network or algorithm.
-Keep your response concise (2-3 sentences maximum). 
-Use a tactical, cyber-military tone (e.g. "Operator, your logic...", "Synthesis optimal...", "Sub-optimal thresholds..."). 
-If the code looks mostly correct or is a good attempt, state "STATUS: APPROVED". If it has critical syntax errors or logic flaws, state "STATUS: REJECTED".
+TASK: Review the following Python neural network code and its execution results for the mission "${challenge}" submitted by Operator 01.
 
-CODE:
+CODE SUBMITTED:
 ${code}
+
+EXECUTION OUTPUT:
+${output || "None"}
+
+EXECUTION ERRORS:
+${error || "None"}
+
+INSTRUCTIONS:
+1. Analyze if the code logic is correct for a machine learning context.
+2. Review the execution output. If there were errors, explain them tactically.
+3. Keep your response concise (2-3 sentences maximum). 
+4. Use a tactical, cyber-military tone (e.g. "Operator, your logic...", "Synthesis optimal...", "Sub-optimal thresholds..."). 
+5. Start or end with "STATUS: APPROVED" if it's correct/successful, or "STATUS: REJECTED" if failed/erroneous.
+
+RESPONSE:
     `;
 
     const result = await geminiGenerate(prompt);
