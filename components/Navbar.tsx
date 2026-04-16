@@ -15,7 +15,7 @@ export default function Navbar() {
         {[
           { label: "Code Lab", route: "/code-lab" },
           { label: "Neural Hub", route: "/games" },
-          { label: "Vault", route: "#" }
+          { label: "Leaderboard", route: "/leaderboard" }
         ].map((item) => (
           <Link
             key={item.label}

@@ -1,334 +1,401 @@
 "use client"
-import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
-import Sidebar from "@/components/dashboard/Sidebar";
-import { executeCode, challenges, CodingChallenge, validateChallenge } from "@/lib/piston";
 
-type Message = {
-  sender: "Syn_Intel" | "Operator";
-  time: string;
-  text: string;
-  type?: "warning" | "success" | "info" | "error";
-};
+import React, { useState, useEffect, useRef } from "react"
+import { Editor } from "@monaco-editor/react"
+import { 
+  ChevronRight, 
+  Terminal as TerminalIcon, 
+  Play, 
+  Cpu, 
+  ShieldCheck, 
+  Activity,
+  Code2,
+  Lock,
+  Zap,
+  MessageSquare,
+  ChevronLeft,
+  Settings,
+  BrainCircuit,
+  Target
+} from "lucide-react"
+import Sidebar from "@/components/dashboard/Sidebar"
+import { challenges, CodingChallenge } from "@/lib/piston"
+import { calculateLevel, getProgressToNextLevel } from "@/lib/xp"
 
 export default function CodeLabPage() {
-  const [terminalInput, setTerminalInput] = useState("");
-  const [sessionActive, setSessionActive] = useState(true);
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [isAssisting, setIsAssisting] = useState(false);
-  const [activeMsn, setActiveMsn] = useState<CodingChallenge>(challenges[0]);
-  const [hintVisible, setHintVisible] = useState(false);
-  const [suggestion, setSuggestion] = useState("");
+  // Session Stats & Progression
+  const [totalXp, setTotalXp] = useState(0)
+  const [completedMsns, setCompletedMsns] = useState<string[]>([])
+  const [isInitializing, setIsInitializing] = useState(true)
   
-  const [code, setCode] = useState(activeMsn.starterCode);
+  // Mission State
+  const [activeMsn, setActiveMsn] = useState<CodingChallenge>(challenges[0])
+  const [code, setCode] = useState(activeMsn.starterCode)
+  
+  // Tactical Buffers
+  const [logs, setLogs] = useState<string[]>([
+    "[SYSTEM] > NEURAL_OS v4.2.0 INITIALIZED",
+    "[SYSTEM] > WAITING FOR OPERATOR SEQUENCE..."
+  ])
+  const [suggestion, setSuggestion] = useState<string | null>(null)
+  const [isExecuting, setIsExecuting] = useState(false)
+  const [activeTab, setActiveTab] = useState<"briefing" | "advisor">("briefing")
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      sender: "Syn_Intel",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      text: "SYSTEM_ONLINE. Awaiting neural code synthesis from Operator 01.",
-      type: "info",
-    }
-  ]);
+  const terminalEndRef = useRef<HTMLDivElement>(null)
 
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
+  // Auto-scroll terminal
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [logs])
 
+  // Tactical Initializer: Fetch live state and find first incomplete mission
   useEffect(() => {
-    setCode(activeMsn.starterCode);
-    setSuggestion("");
-    setHintVisible(false);
-    setMessages((prev) => [...prev, {
-        sender: "Syn_Intel",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        text: `NEW_MISSION: ${activeMsn.title}. OBJECTIVE: ${activeMsn.description}`,
-        type: "info",
-      }]);
-  }, [activeMsn]);
-
-  const handleCommand = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!terminalInput.trim()) return;
-
-    const newMsg: Message = {
-      sender: "Operator",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      text: terminalInput,
-    };
-
-    setMessages((prev) => [...prev, newMsg]);
-    const cmd = terminalInput.toUpperCase().trim();
-    setTerminalInput("");
-
-    setTimeout(() => {
-      let response: Message = {
-        sender: "Syn_Intel",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        text: "COMMAND_RECOGNIZED: EXECUTION_PENDING...",
-        type: "info",
-      };
-
-      if (cmd === "START" || cmd === "INITIATE") {
-        setSessionActive(true);
-        response.text = "SYSTEM_RE-INITIATED. SYNCHRONIZING_COGNITIVE_NODES...";
-        response.type = "success";
-      } else if (cmd === "STOP" || cmd === "HALT") {
-        setSessionActive(false);
-        response.text = "SYSTEM_HALTED. ALL_PROCESSES_SUSPENDED.";
-        response.type = "warning";
-      } else if (cmd === "HELP") {
-        response.text = "AVAILABLE_COMMANDS: START, STOP, RESET, EXECUTE, HINT, SUGGEST, MSN_1..5";
-      } else if (cmd === "EXECUTE" || cmd === "RUN") {
-        evaluateCode();
-        return;
-      } else if (cmd === "HINT") {
-          handleAssist("hint");
-          return;
-      } else if (cmd === "SUGGEST") {
-          handleAssist("suggest");
-          return;
-      } else if (cmd === "CLEAN" || cmd === "CLEAR") {
-        setMessages([]);
-        return;
-      } else if (cmd.startsWith("MSN_")) {
-          const idx = parseInt(cmd.split("_")[1]) - 1;
-          if (challenges[idx]) {
-              setActiveMsn(challenges[idx]);
-              return;
+    async function syncProgress() {
+      try {
+        const res = await fetch("/api/xp")
+        const profile = await res.json()
+        if (profile) {
+          setTotalXp(profile.xp || 0)
+          const done = profile.completed_msns || []
+          setCompletedMsns(done)
+          
+          // Auto-select first incomplete mission
+          const nextIncomplete = challenges.find(c => !done.includes(c.id))
+          if (nextIncomplete) {
+            setActiveMsn(nextIncomplete)
           }
-      } 
-      setMessages((prev) => [...prev, response]);
-    }, 400);
-  };
-
-  const handleAssist = async (type: "suggest" | "hint") => {
-    if (!sessionActive || isAssisting) return;
-    setIsAssisting(true);
-
-    try {
-        const res = await fetch("/api/code-assist", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code, mission: activeMsn.title, type })
-        });
-        const data = await res.json();
-        
-        if (type === "hint") {
-            setMessages((prev) => [...prev, {
-                sender: "Syn_Intel",
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                text: `TACTICAL_HINT: ${data.message}`,
-                type: "warning",
-            }]);
-        } else {
-            setSuggestion(data.message);
         }
-    } catch (err) {
-        setMessages((prev) => [...prev, {
-            sender: "Syn_Intel",
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            text: "ERROR: Assistance downlink compromised.",
-            type: "error",
-        }]);
-    } finally {
-        setIsAssisting(false);
+      } catch (err) {
+        console.error("Progression sync failed:", err)
+      } finally {
+        setIsInitializing(false)
+      }
     }
-  };
+    syncProgress()
+  }, [])
 
-  const evaluateCode = async () => {
-    if (!sessionActive) {
-      setMessages((prev) => [...prev, {
-        sender: "Syn_Intel",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        text: "ERROR: System offline. Use 'START' to restore power.",
-        type: "error",
-      }]);
-      return;
-    }
+  // Sync code when mission changes
+  useEffect(() => {
+    setCode(activeMsn.starterCode)
+    setSuggestion(null)
+    setLogs([`[SYSTEM] > MISSION_UPLINK: ${activeMsn.title} ESTABLISHED.`])
+  }, [activeMsn])
 
-    setIsEvaluating(true);
-    setMessages((prev) => [...prev, {
-      sender: "Operator",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      text: "EXECUTING_ALGORITHMIC_STEP...",
-    }]);
+  const executeSequence = async () => {
+    if (isExecuting) return
+    setIsExecuting(true)
+    
+    setLogs(prev => [...prev, `[SYSTEM] > ${new Date().toLocaleTimeString()} :: INITIATING_GRADIENT_PASS...`])
 
     try {
-      const { output, error } = await executeCode(code);
-      
-      if (output) {
-         setMessages((prev) => [...prev, {
-            sender: "Syn_Intel",
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            text: `>>> OUT:\n${output}`,
-            type: "info",
-          }]);
-      }
-      
-      if (error) {
-         setMessages((prev) => [...prev, {
-            sender: "Syn_Intel",
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            text: `>>> ERR:\n${error}`,
-            type: "error",
-          }]);
-      }
-
-      const isCorrect = validateChallenge(output, activeMsn.expectedOutput);
-
-      const res = await fetch("/api/code-check", {
+      const response = await fetch("/api/code-lab", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, challenge: activeMsn.title, output, error, isCorrect })
-      });
-      const data = await res.json();
-      
-      setMessages((prev) => [...prev, {
-        sender: "Syn_Intel",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        text: data.message,
-        type: data.message.includes("APPROVED") ? "success" : "warning",
-      }]);
+        body: JSON.stringify({ 
+          code, 
+          challengeId: activeMsn.id, 
+          userId: "test-user-1" 
+        }),
+      })
 
-      if (isCorrect) {
-          setMessages((prev) => [...prev, {
-            sender: "Syn_Intel",
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-            text: `MISSION_SUCCESS: Objective ${activeMsn.title} finalized. XP Gain: +${activeMsn.xp}`,
-            type: "success",
-          }]);
+      const data = await response.json()
+
+      if (data.error) setLogs(prev => [...prev, `[ERROR] > ${data.error}`])
+      if (data.output) setLogs(prev => [...prev, `[STDOUT] > ${data.output}`])
+      
+      if (data.feedback) {
+        setSuggestion(data.feedback)
+        setActiveTab("advisor")
       }
-    } catch (err: any) {
-      setMessages((prev) => [...prev, {
-        sender: "Syn_Intel",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        text: "COMMUNICATION_FAILURE: Neural link terminated unexpectedly.",
-        type: "error",
-      }]);
+
+      if (data.passed) {
+        setLogs(prev => [
+          ...prev, 
+          `[SYSTEM] > MISSION_COMPLETE. XP_ACQUIRED: ${data.xp_earned}`
+        ])
+        setTotalXp(prev => prev + data.xp_earned)
+        
+        // Update local completion state
+        const updatedDone = [...completedMsns, activeMsn.id]
+        setCompletedMsns(updatedDone)
+
+        // AUTO-PROGRESS: find next mission after a short delay
+        setTimeout(() => {
+          const currentIndex = challenges.findIndex(c => c.id === activeMsn.id)
+          const nextMsn = challenges[currentIndex + 1]
+          if (nextMsn) {
+            setLogs(prev => [...prev, `[SYSTEM] > NEXT_OBJECTIVE_ID: ${nextMsn.id} :: INITIATING_UPLINK...`])
+            setActiveMsn(nextMsn)
+          } else {
+            setLogs(prev => [...prev, `[SYSTEM] > ALL_TACTICAL_OBJECTIVES_SECURED. COMMANDER_RATING: OPTIMAL.`])
+          }
+        }, 2500)
+
+      } else if (data.output || data.error) {
+        setLogs(prev => [...prev, `[SYSTEM] > MISSION_FAILED: LOGIC_FAULT_DETECTED.`])
+      }
+
+    } catch (err) {
+      setLogs(prev => [...prev, `[ERROR] > UPLINK_LOST: CORE_FAULT.`])
     } finally {
-      setIsEvaluating(false);
+      setIsExecuting(false)
     }
-  };
+  }
+
+  const { current, needed, percentage } = getProgressToNextLevel(totalXp)
+  const currentLevel = calculateLevel(totalXp)
 
   return (
-    <div className="bg-surface text-on-surface font-body min-h-screen flex overflow-x-hidden">
-      <div className="pointer-events-none fixed inset-0 z-50 scanlines mix-blend-screen" />
+    <div className="flex h-screen bg-[#020617] text-slate-200 overflow-hidden font-mono relative">
       <Sidebar />
 
-      <main className="flex-1 md:ml-72 p-6 lg:p-10 flex flex-col overflow-y-auto min-h-screen relative z-10">
-          <div className="mb-8 flex justify-between items-end border-b border-outline-variant/10 pb-6">
-            <div>
-              <h1 className="text-3xl font-headline font-black uppercase text-on-surface tracking-widest flex items-center gap-2">
-                SYN_INTEL LAB <span className="text-primary animate-pulse">_</span>
-              </h1>
-              <p className="font-mono text-[10px] text-secondary uppercase tracking-[0.3em] mt-2">
-                AI_Ensemble: Gemini | OpenRouter | Grok
-              </p>
-            </div>
-            <div className="flex gap-10 items-center">
-                 <div className="flex flex-col items-end">
-                    <span className="font-mono text-[9px] text-on-surface-variant uppercase">Current_Mission</span>
-                    <span className="font-headline font-bold text-xl text-primary">{activeMsn.id.split('_').slice(1).join('_').toUpperCase()}</span>
-                 </div>
-                 <div className="h-10 w-[1px] bg-outline-variant/20" />
-                 <div className="flex px-4 py-2 border border-primary/20 bg-primary/5 gap-3">
-                    <button onClick={() => handleAssist("hint")} disabled={isAssisting} className="font-mono text-[10px] text-primary hover:text-white transition-colors flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">lightbulb</span> REQUEST_HINT
-                    </button>
-                    <div className="w-[1px] h-4 bg-primary/20" />
-                    <button onClick={() => handleAssist("suggest")} disabled={isAssisting} className="font-mono text-[10px] text-secondary hover:text-white transition-colors flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">auto_fix</span> GET_SUGGESTION
-                    </button>
-                 </div>
-            </div>
+      {/* Main Command Deck */}
+      <div className="flex-1 ml-72 flex flex-col min-w-0 bg-[#020617]">
+        
+        {/* Tactical Header */}
+        <header className="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-slate-900/40 backdrop-blur-xl">
+          <div className="flex items-center gap-6">
+               <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                         <span className="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Operator_Uplink: Live</span>
+                    </div>
+                    <h1 className="text-xl font-black tracking-tighter text-slate-100 uppercase italic">
+                         {activeMsn.title}
+                    </h1>
+               </div>
           </div>
 
-          <div className="flex flex-col 2xl:flex-row gap-8 flex-1 mb-8 overflow-hidden">
-            <div className="w-full 2xl:w-[380px] flex flex-col gap-4 max-h-[calc(100vh-200px)] overflow-y-auto pr-2 custom-scrollbar">
-              {challenges.map((msn, idx) => (
-                <div 
-                    key={msn.id} 
-                    onClick={() => setActiveMsn(msn)}
-                    className={`p-6 relative group cursor-pointer transition-all border shadow-2xl overflow-hidden ${activeMsn.id === msn.id ? "bg-surface-container-high border-primary/50" : "bg-surface-container-low/40 border-outline-variant/10 hover:border-primary/30"}`}>
-                    <div className="flex justify-between items-start mb-4">
-                        <div className={`font-mono text-[9px] px-2 py-0.5 border ${activeMsn.id === msn.id ? "bg-primary text-on-primary border-primary" : "text-on-surface-variant border-outline-variant/20"}`}>
-                            MSN_0{idx + 1}
-                        </div>
-                        <span className="material-symbols-outlined text-[16px] text-outline-variant/40">rocket</span>
+          {/* XP Telemetry */}
+          <div className="flex items-center gap-8">
+               <div className="flex flex-col items-end gap-1">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{currentLevel}</span>
+                        <span className="text-xs font-black text-emerald-400">{totalXp} XP</span>
                     </div>
-                    <h4 className="font-headline font-black text-on-surface text-base mb-2 uppercase group-hover:text-primary transition-colors">
-                        {msn.title}
-                    </h4>
-                    <p className="font-body text-[11px] text-on-surface-variant leading-relaxed opacity-70">
-                        {msn.description}
-                    </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex-1 flex flex-col gap-6 min-h-[700px]">
-                <div className="flex-1 border border-outline-variant/20 bg-[#060a15] relative overflow-hidden shadow-2xl flex flex-col group">
-                    <div className="flex items-center justify-between border-b border-outline-variant/15 bg-surface-container-low/80 backdrop-blur-md px-6 py-4">
-                        <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary text-[18px]">code</span>
-                            <span className="font-mono text-xs text-on-surface font-bold uppercase">neural_synthesis.py</span>
-                        </div>
-                        <button onClick={evaluateCode} disabled={isEvaluating || !sessionActive} className="px-8 py-2.5 bg-primary text-on-primary font-headline font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(105,246,184,0.3)]">
-                            {isEvaluating ? "SYNTHESIZING..." : "EXECUTE_SEQUENCE"}
-                        </button>
-                    </div>
-
-                    <div className={`flex-1 flex overflow-hidden relative ${!sessionActive || isEvaluating ? "opacity-40" : ""}`}>
-                        <div className="w-[50px] bg-surface-container-lowest border-r border-outline-variant/10 flex flex-col items-center py-6 text-on-surface-variant/20 font-mono text-[11px] select-none">
-                            {code.split('\n').map((_, i) => <span key={i} className="h-[22px]">{i + 1}</span>)}
-                        </div>
-                        <textarea
-                            value={code}
-                            onChange={(e) => setCode(e.target.value)}
-                            spellCheck={false}
-                            className="flex-1 bg-transparent text-primary/80 font-mono text-sm leading-[22px] p-6 resize-none outline-none custom-scrollbar whitespace-pre w-full h-full"
+                    <div className="w-48 h-1 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
+                        <div 
+                            className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)] transition-all duration-1000"
+                            style={{ width: `${percentage}%` }}
                         />
                     </div>
+                    <span className="text-[8px] text-slate-600 uppercase tracking-tighter italic">Next Sync: {needed} XP required</span>
+               </div>
 
-                    {suggestion && (
-                        <div className="absolute bottom-4 right-4 max-w-sm bg-surface-container-high border border-secondary/30 p-4 shadow-2xl animate-fade-in z-30">
-                            <div className="flex justify-between items-center mb-2 border-b border-outline-variant/10 pb-1">
-                                <span className="font-mono text-[9px] text-secondary uppercase font-bold">Tactical Suggestion</span>
-                                <button onClick={() => setSuggestion("")} className="material-symbols-outlined text-[14px]">close</button>
-                            </div>
-                            <p className="font-mono text-[10px] text-on-surface-variant leading-relaxed">
-                                {suggestion}
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                <div className="h-[340px] border border-primary/20 bg-[#080d19] shadow-2xl flex flex-col relative z-20">
-                     <div className="px-4 py-2.5 border-b border-primary/10 flex justify-between items-center bg-primary/5">
-                        <span className="font-headline font-black text-[10px] uppercase tracking-widest text-on-surface flex items-center gap-2">SYN_INTEL COGNITIVE_BUFFER</span>
-                        {isAssisting && <div className="text-secondary font-mono text-[9px] animate-pulse">DOWNLINK_ACTIVE...</div>}
-                    </div>
-                    <div className="p-6 flex flex-col gap-5 flex-1 overflow-y-auto custom-scrollbar">
-                        {messages.map((m, i) => (
-                            <div key={i} className={`flex flex-col gap-1.5 ${m.sender === "Operator" ? "items-end" : "items-start"}`}>
-                                <div className="font-mono text-[8px] text-on-surface-variant/60 uppercase">{m.sender} {"//"} {m.time}</div>
-                                <div className={`border font-mono text-[11px] p-4 max-w-[90%] whitespace-pre-wrap ${m.sender === "Operator" ? "bg-surface/20 border-outline-variant/10" : (m.type === 'error' ? 'bg-error/10 border-error/20 text-error' : (m.type === 'success' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-surface/40 border-outline-variant/10'))}`}>
-                                    {m.text}
-                                </div>
-                            </div>
-                        ))}
-                        <div ref={chatEndRef} />
-                    </div>
-                    <form onSubmit={handleCommand} className="p-3 border-t border-outline-variant/10 bg-surface-container-low flex">
-                        <input value={terminalInput} onChange={e => setTerminalInput(e.target.value)} placeholder="ENTER_COMMAND... (HINT/SUGGEST)" className="flex-1 bg-transparent border-none text-on-surface font-mono text-[11px] outline-none placeholder-on-surface-variant/20 uppercase" />
-                    </form>
-                </div>
-            </div>
+               <button 
+                    onClick={executeSequence}
+                    disabled={isExecuting}
+                    className={`
+                         relative group flex items-center gap-3 px-8 py-3 rounded-sm font-black text-sm tracking-tighter transition-all duration-500
+                         ${isExecuting 
+                             ? "bg-slate-800 text-slate-600 scale-95" 
+                             : "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.3)] active:scale-90 overflow-hidden"
+                         }
+                    `}
+               >
+                    {!isExecuting && <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 italic" />}
+                    <Play className={`w-4 h-4 ${isExecuting ? 'animate-spin' : ''}`} fill="currentColor" />
+                    <span className="relative z-10">{isExecuting ? "SYNCING..." : "EXECUTE_SEQUENCE"}</span>
+               </button>
           </div>
-        </main>
+        </header>
+
+        <div className="flex-1 flex min-h-0">
+          
+          {/* Left Wing: Mission Matrix */}
+          <div className="w-72 border-r border-slate-800 bg-slate-950/40 flex flex-col">
+               <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                         <Target className="w-3 h-3 text-slate-500" />
+                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mission_Matrix</span>
+                    </div>
+               </div>
+                <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                    {isInitializing ? (
+                         <div className="p-4 text-[10px] text-slate-600 animate-pulse italic">Decoding_Matrix...</div>
+                    ) : challenges.map((msn) => {
+                         const isLocked = totalXp < msn.requiredXp
+                         const isActive = activeMsn.id === msn.id
+                         const isDone = completedMsns.includes(msn.id)
+                         return (
+                              <button
+                                   key={msn.id}
+                                   disabled={isLocked}
+                                   onClick={() => setActiveMsn(msn)}
+                                   className={`
+                                        w-full p-4 rounded-sm border text-left transition-all group relative overflow-hidden
+                                        ${isActive 
+                                             ? "bg-emerald-500/10 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]" 
+                                             : "bg-transparent border-slate-800/40 hover:border-slate-700 hover:bg-slate-900/40"
+                                        }
+                                        ${isLocked ? "opacity-40 cursor-not-allowed grayscale" : ""}
+                                   `}
+                              >
+                                   <div className="flex justify-between items-start mb-1">
+                                        <div className="flex items-center gap-2">
+                                             <span className={`text-[9px] font-black uppercase tracking-widest ${isActive ? 'text-emerald-400' : 'text-slate-600'}`}>
+                                                 [{msn.difficulty}]
+                                             </span>
+                                             {isDone && (
+                                                  <span className="text-[8px] bg-emerald-500 text-slate-950 px-1 font-black">DONE</span>
+                                             )}
+                                        </div>
+                                        {isLocked ? (
+                                            <Lock className="w-3 h-3 text-slate-700" />
+                                        ) : isDone ? (
+                                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                        ) : (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-700 animate-pulse" />
+                                        )}
+                                   </div>
+                                   <div className={`text-xs font-bold ${isActive ? 'text-slate-100' : 'text-slate-400 group-hover:text-slate-300'}`}>
+                                        {msn.title}
+                                   </div>
+                                   <div className="text-[9px] text-slate-600 mt-1 line-clamp-1 italic italic">
+                                        {isLocked ? `Sync Required: ${msn.requiredXp} XP` : msn.shortDesc}
+                                   </div>
+                              </button>
+                         )
+                    })}
+               </div>
+          </div>
+
+          {/* Center: Core Control */}
+          <div className="flex-1 flex flex-col min-w-0 bg-[#0a0f1e]">
+               <div className="flex-1 relative">
+                    <Editor
+                        height="100%"
+                        defaultLanguage="python"
+                        theme="vs-dark"
+                        value={code}
+                        onChange={(val) => setCode(val || "")}
+                        options={{
+                            fontSize: 14,
+                            fontFamily: 'JetBrains Mono, monospace',
+                            minimap: { enabled: false },
+                            scrollBeyondLastLine: false,
+                            padding: { top: 20 }
+                        }}
+                    />
+               </div>
+               {/* Terminal Buffer */}
+               <div className="h-64 border-t border-slate-800 flex flex-col bg-black/60 relative overflow-hidden">
+                    <div className="h-8 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-4">
+                         <div className="flex items-center gap-2">
+                              <TerminalIcon className="w-3 h-3 text-emerald-500" />
+                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Neural_Buffer_Output</span>
+                         </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-1">
+                         {logs.map((log, i) => (
+                              <div key={i} className={`text-xs flex gap-3 ${
+                                   log.startsWith("[ERROR]") ? "text-red-500" :
+                                   log.startsWith("[STDOUT]") ? "text-emerald-400" :
+                                   log.startsWith("[SYSTEM]") ? "text-slate-500" : "text-cyan-400"
+                              }`}>
+                                   <span className="opacity-30 shrink-0 select-none">{i+1}</span>
+                                   <span className="whitespace-pre-wrap">{log}</span>
+                              </div>
+                         ))}
+                         <div ref={terminalEndRef} />
+                    </div>
+               </div>
+          </div>
+
+          {/* Right Wing: AI Advisor */}
+          <div className="w-80 border-l border-slate-800 bg-slate-950/60 flex flex-col">
+               <div className="flex border-b border-slate-800">
+                    <button 
+                        onClick={() => setActiveTab("briefing")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black tracking-widest uppercase transition-all
+                            ${activeTab === 'briefing' ? 'bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-500 hover:text-slate-400'}
+                        `}
+                    >
+                        <Zap className="w-3 h-3" /> Briefing
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab("advisor")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black tracking-widest uppercase transition-all
+                            ${activeTab === 'advisor' ? 'bg-cyan-500/10 text-cyan-400 border-b-2 border-cyan-400' : 'text-slate-500 hover:text-slate-400'}
+                        `}
+                    >
+                        <BrainCircuit className="w-3 h-3" /> Syn_Intel
+                    </button>
+               </div>
+
+               <div className="flex-1 overflow-y-auto p-6 transition-all duration-500">
+                    {activeTab === "briefing" ? (
+                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                              <div className="space-y-2">
+                                   <span className="text-[10px] text-emerald-500/60 font-black uppercase tracking-widest">Objective</span>
+                                   <p className="text-sm leading-relaxed text-slate-300 font-medium">
+                                        {activeMsn.description}
+                                   </p>
+                              </div>
+                              <div className="p-4 rounded-sm bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+                                   <div className="flex items-center gap-2">
+                                        <Activity className="w-3 h-3 text-emerald-400" />
+                                        <span className="text-[10px] text-emerald-400 font-black uppercase tracking-widest">Tactical_Parameters</span>
+                                   </div>
+                                   <div className="text-[11px] text-slate-400 space-y-1">
+                                        <div className="flex justify-between">
+                                             <span>XP Reward:</span>
+                                             <span className="text-emerald-400 font-bold">+{activeMsn.xp}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                             <span>Difficulty:</span>
+                                             <span className="text-emerald-400">{activeMsn.difficulty}</span>
+                                        </div>
+                                   </div>
+                              </div>
+                              <div className="space-y-2">
+                                   <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Field_Notes</span>
+                                   <p className="text-[11px] text-slate-500 italic leading-relaxed">
+                                        Ensure the output is strictly formatted as requested. Syn_Intel will analyze all execution pulses.
+                                   </p>
+                              </div>
+                         </div>
+                    ) : (
+                         <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-500">
+                              <div className="p-5 rounded-sm bg-cyan-500/5 border border-cyan-500/20 relative group overflow-hidden">
+                                   <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-100 transition-opacity">
+                                        <BrainCircuit className="w-8 h-8 text-cyan-400" />
+                                   </div>
+                                   <div className="flex items-center gap-2 mb-4">
+                                        <MessageSquare className="w-3 h-3 text-cyan-400" />
+                                        <span className="text-[10px] text-cyan-400 font-black uppercase tracking-widest">Neural_Analysis</span>
+                                   </div>
+                                   <div className="text-[13px] text-slate-200 leading-relaxed font-medium italic">
+                                        {suggestion ? suggestion : "Awaiting code execution pulse. Analyze the parameters in the Briefing tab to begin calibration."}
+                                   </div>
+                              </div>
+                              
+                              {activeMsn.hint && (
+                                   <div className="space-y-3 p-4 border-l-2 border-slate-800">
+                                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Direct_Link_Hint</span>
+                                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                                             {activeMsn.hint}
+                                        </p>
+                                   </div>
+                              )}
+                         </div>
+                    )}
+               </div>
+
+               {/* Stats Footer */}
+               <div className="p-4 border-t border-slate-800 bg-black/40 text-[9px] text-slate-600 space-y-2">
+                    <div className="flex justify-between">
+                         <span className="uppercase tracking-widest">System_Integrity</span>
+                         <span className="text-emerald-500 font-bold">OPTIMAL</span>
+                    </div>
+                    <div className="flex justify-between">
+                         <span className="uppercase tracking-widest">Neural_Load</span>
+                         <span>0.0032ms</span>
+                    </div>
+               </div>
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  )
 }

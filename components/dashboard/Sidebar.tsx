@@ -11,7 +11,7 @@ const navItems = [
   { label: "Comms", icon: "forum", href: "/dashboard/comms" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ user }: { user?: any }) {
   const pathname = usePathname();
 
   return (
@@ -32,13 +32,13 @@ export default function Sidebar() {
         {/* User Profile */}
         <div className="flex gap-4 items-center bg-surface-container-high p-4 border-l-2 border-primary">
           <div className="size-12 bg-surface-container-highest ghost-border flex items-center justify-center text-primary font-mono text-lg font-bold">
-            01
+            {user?.name?.substring(0, 1) || "01"}
           </div>
           <div className="flex flex-col">
-            <h1 className="text-on-surface font-headline font-medium uppercase text-sm tracking-wider">
-              Operative 01
+            <h1 className="text-on-surface font-headline font-medium uppercase text-sm tracking-wider truncate max-w-[120px]">
+              {user?.name || "Operative 01"}
             </h1>
-            <p className="text-secondary font-mono text-xs">SYS.ADMIN</p>
+            <p className="text-secondary font-mono text-xs uppercase">{user?.level || "SYS.ADMIN"}</p>
           </div>
         </div>
 

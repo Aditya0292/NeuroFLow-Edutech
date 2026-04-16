@@ -167,35 +167,35 @@ export async function geminiGenerate(prompt: string) {
 }
 
 export async function getCodeSuggestions(code: string, mission: string): Promise<string> {
-    try {
-        const prompt = `ROLE: Elite ML Architect.
+  try {
+    const prompt = `ROLE: Elite ML Architect.
 TASK: Analyze this partial Python code for mission '${mission}'.
 Provide 2-3 specific suggestions for logic optimization or completion. 
 Keep it concise and tactical.
 
 CODE:
 ${code}`;
-        const text = await generateFromAvailableProviders(prompt);
-        return text.trim();
-    } catch (error) {
-        return "Tactical analysis unavailable. Review initialization parameters.";
-    }
+    const text = await generateFromAvailableProviders(prompt);
+    return text.trim();
+  } catch (error) {
+    return "Tactical analysis unavailable. Review initialization parameters.";
+  }
 }
 
 export async function getMissionHint(code: string, mission: string): Promise<string> {
-    try {
-        const prompt = `ROLE: Tactical Mission Commander.
+  try {
+    const prompt = `ROLE: Tactical Mission Commander.
 TASK: The user is stuck on mission '${mission}'. 
 Provide a cryptic but helpful hint based on their current code. Do NOT give the solution.
 Max 1 sentence.
 
 CODE:
 ${code}`;
-        const text = await generateFromAvailableProviders(prompt);
-        return text.trim();
-    } catch (error) {
-        return "Focus on the gradient descent weight update formula.";
-    }
+    const text = await generateFromAvailableProviders(prompt);
+    return text.trim();
+  } catch (error) {
+    return "Focus on the gradient descent weight update formula.";
+  }
 }
 
 export async function generateQuiz(topic: string, difficulty: string): Promise<QuizQuestion[]> {
@@ -213,27 +213,27 @@ Return ONLY a valid JSON array, no markdown, no explanation:
 }
 
 function toQuizQuestions(value: unknown): QuizQuestion[] {
-    if (!Array.isArray(value)) return []
-    const result: QuizQuestion[] = []
-    for (const item of value) {
-      const record = item as Record<string, unknown>
-      const question = typeof record.question === "string" ? record.question : ""
-      const explanation = typeof record.explanation === "string" ? record.explanation : ""
-      const optionsRaw = Array.isArray(record.options) ? record.options : []
-      const options = optionsRaw.filter((o): o is string => typeof o === "string")
-      const correct = typeof record.correct === "number" ? record.correct : -1
-  
-      if (question && explanation && options.length === 4 && correct >= 0 && correct <= 3) {
-        result.push({
-          question,
-          options: [options[0], options[1], options[2], options[3]],
-          correct,
-          explanation
-        })
-      }
+  if (!Array.isArray(value)) return []
+  const result: QuizQuestion[] = []
+  for (const item of value) {
+    const record = item as Record<string, unknown>
+    const question = typeof record.question === "string" ? record.question : ""
+    const explanation = typeof record.explanation === "string" ? record.explanation : ""
+    const optionsRaw = Array.isArray(record.options) ? record.options : []
+    const options = optionsRaw.filter((o): o is string => typeof o === "string")
+    const correct = typeof record.correct === "number" ? record.correct : -1
+
+    if (question && explanation && options.length === 4 && correct >= 0 && correct <= 3) {
+      result.push({
+        question,
+        options: [options[0], options[1], options[2], options[3]],
+        correct,
+        explanation
+      })
     }
-    return result
   }
+  return result
+}
 
 export async function explainAnswer(
   question: string,
@@ -314,5 +314,32 @@ Return ONLY valid JSON:
       explanation: "Unable to classify at the moment. Please try again with a shorter input.",
       features: []
     }
+  }
+}
+
+export async function analyzeCodeResult(code: string, output: string, error: string | null, mission: string) {
+  const prompt = `
+    AS A TACTICAL AI INSTRUCTOR (SYN_INTEL), ANALYZE THIS OPERATOR'S CODE AND EXECUTION RESULT.
+    
+    MISSION: ${mission}
+    CODE:
+    ${code}
+    
+    STDOUT: ${output || "NONE"}
+    STDERR: ${error || "NONE"}
+    
+    TASK:
+    1. IF THERE IS AN ERROR, DESCRIBE IT IN A CRYPTIC, TACTICAL TONE AND SUGGEST A FIX.
+    2. IF THE OUTPUT IS WRONG, EXPLAIN THE LOGICAL GAP.
+    3. IF SUCCESSFUL, PROVIDE A BRIEF TACTICAL APPROVAL.
+    
+    KEEP IT CONCISE, MONOSPACED STYLE, AND MAX 3 SENTENCES.
+  `;
+
+  try {
+    const aiResponse = await generateFromAvailableProviders(prompt);
+    return aiResponse;
+  } catch (err) {
+    return "ANALYSIS_OFFLINE: Neural link unstable.";
   }
 }

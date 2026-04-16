@@ -4,10 +4,10 @@ export interface User {
   email: string
   xp: number
   level: string
-  streak: number
   badges: string[]
-  completedModules: string[]
-  lastLogin: string
+  completed_msns: string[]
+  skill_vector: Record<string, number>
+  updated_at: string
 }
 
 export interface QuizResult {
