@@ -26,13 +26,13 @@
     background: repeating-linear-gradient(
       to bottom,
       transparent,
-      transparent 2px,
-      rgba(105, 246, 184, 0.08) 2px,
-      rgba(105, 246, 184, 0.08) 4px
+      transparent 1px,
+      rgba(105, 246, 184, 0.04) 1px,
+      rgba(105, 246, 184, 0.04) 2px
     );
     pointer-events: none;
     z-index: 9999;
-    animation: scanline_float 20s linear infinite;
+    animation: scanline_float 30s linear infinite;
   }
 
   @keyframes scanline_float {
@@ -44,9 +44,9 @@
     position: fixed;
     inset: 0;
     background-image: 
-      linear-gradient(to right, rgba(105, 246, 184, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(105, 246, 184, 0.1) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(to right, rgba(105, 246, 184, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(105, 246, 184, 0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
     pointer-events: none;
     z-index: 0;
   }
