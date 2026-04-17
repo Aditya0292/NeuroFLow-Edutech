@@ -1,75 +1,92 @@
 <div align="center">
 
-```ascii
-    _   __                      ______ _               
-   / | / /___  __  ___________ / ____// /____ _      __
-  /  |/ / __ \/ / / / ___/ __ \/ /_   / / __ \ | /| / /
- / /|  / /_/ / /_/ / /  / /_/ / __/  / / /_/ / |/ |/ / 
-/_/ |_/\____/\__,_/_/   \____/_/    /_/\____/|__/|__/  
-                                                       
-                INTELLIGENCE & LEARNING OS
+```
+███╗   ██╗███████╗██╗   ██╗██████╗  ██████╗ ███████╗██╗      ██████╗ ██╗    ██╗
+████╗  ██║██╔════╝██║   ██║██╔══██╗██╔═══██╗██╔════╝██║     ██╔═══██╗██║    ██║
+██╔██╗ ██║█████╗  ██║   ██║██████╔╝██║   ██║█████╗  ██║     ██║   ██║██║ █╗ ██║
+██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══╝  ██║     ██║   ██║██║███╗██║
+██║ ╚████║███████╗╚██████╔╝██║  ██║╚██████╔╝██║     ███████╗╚██████╔╝╚███╔███╔╝
+╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚══════╝ ╚═════╝  ╚══╝╚══╝ 
 ```
 
-[![Next.js 14](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth_%26_DB-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-
-**Codename: `Vibeathon-TeamAlpha`**
+### **The Open-Source AI/ML Learning OS**
+*Learn. Build. Break. Master.*
 
 ---
 
-### 📡 STRATEGIC OVERVIEW
-> **"Master the Machine. Sovereign Neural Architectures."**
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-neuroflow.vercel.app-00ff88?style=for-the-badge)](https://neuroflow.vercel.app)
+[![Next.js 14](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth_%26_DB-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Gemini](https://img.shields.io/badge/Gemini_2.0_Flash-AI_Engine-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
 
-NeuroFlow is an institutional-grade, military-tactical styled web application built to train, evaluate, and gamify machine learning concepts for elite software operators. Featuring a **"liquid glass"** dark-mode aesthetic, the platform combines real-time AI code validation, interactive neural network sandboxes, and progression-based mission logs into a unified dashboard interface.
+<br/>
+
+> **🏆 3rd Place — VIBETHON AI-Powered Coding Hackathon, DYPCET Kolhapur**  
+> *Built in 4 hours. Now built for the world.*
+
+<br/>
+
+**[🌐 Live Demo](https://neuroflow.vercel.app) · [📖 Docs](#-strategic-overview) · [🐛 Report Bug](https://github.com/Aditya0292/NeuroFlow-Edutech/issues) · [✨ Request Feature](https://github.com/Aditya0292/NeuroFlow-Edutech/issues)**
 
 </div>
 
 ---
 
-### 🛠️ CORE SYSTEMS (TECH STACK)
+## 🛰️ STRATEGIC OVERVIEW
 
-| Component | Technology | Specification |
-| :--- | :--- | :--- |
-| **Neural Foundation** | `Next.js 14.2` | App Router, Server/Client Hybrid |
-| **Tactical Design** | `TailwindCSS` | Neon Accents, Scanline Overlays |
-| **Data Backbone** | `Supabase` | PostgreSQL, RLS, Auth |
-| **Code Execution** | `Piston API` | Sandboxed Python 3.10 Runtime |
-| **AI Ensemble** | `SYN_INTEL` | Gemini 1.5, Grok, OpenRouter |
+Most people learn AI/ML by reading. **NeuroFlow makes you feel it.**
 
----
+NeuroFlow is a fully interactive, AI-powered learning platform where you don't just consume content — you **run real Python code**, **play games that teach algorithms**, **break ML pipelines and fix them**, and get **instant AI feedback** on everything you do.
 
-### 📂 SYSTEM DIRECTORY
+It's the platform we wished existed when we were learning ML. So we built it.
 
-```bash
-vibeathon-teamalpha/
-├── 🛸 app/                # Cognitive Core (App Router)
-│   ├── api/            # Neural Relays (API Endpoints)
-│   ├── code-lab/       # Integrated Tactical IDE
-│   ├── quiz/           # Cognitive Assessment Unit
-│   └── games/          # Armory (Interactive Simulations)
-├── 🧩 components/         # Reusable UI Architecture
-├── 🧰 lib/                # Shared Logic & Utility Cores
-├── 📁 public/             # Static Assets & Schematics
-└── ⚙️ tailwind.config.ts  # Tactical Theme configuration
+```
+Traditional Learning          NeuroFlow
+─────────────────────         ──────────────────────────────────
+📄 Read about overfitting  →  🎮 Play "Fix The Model" — spot it live
+📄 Watch gradient descent  →  🕹️ Drag a ball down a loss surface
+📄 Copy code from tutorial →  💻 Write Python, get AI code review
+📄 Take a static quiz      →  🤖 Gemini generates fresh questions
 ```
 
 ---
 
-### 🚀 OPERATIONAL FEATURES
+## ✨ OPERATIONAL FEATURES
 
-*   **[01] SYN_INTEL LAB:** An integrated code environment featuring live AI assistance from **Gemini**, **OpenRouter**, and **Grok**. Execute real ML missions in Python 3.10.
-*   **[02] COGNITIVE PROFILING:** A dedicated Assessment Wing for real-time evaluation of machine learning depth, featuring difficulty-adaptive quizzes.
-*   **[03] THE ARMORY:** Dynamic visualizers (KNN, Neural Lite) to deconstruct complex algorithms into visual logic.
-*   **[04] OPERATOR DASHBOARD:** Centralized telemetry to track XP, Skill Radars, and Mission History through a sleek institutional interface.
-*   **[05] GLOBAL LEADERBOARD:** Real-time global ranking system tracked via cloud-persistence. Benchmark your telemetry against other top-tier operatives.
-*   **[06] LIQUID GLASS UI:** A premium, dark-mode design system with scanning overlays and holographic aesthetic.
+### 🔐 Authentication & Onboarding
+- Secure email/password registration via **Supabase Auth**
+- Skill-level onboarding survey (Beginner → Advanced)
+- Gemini generates a **personalized 4-week roadmap** based on your goals
+
+### 📚 Structured Learning Modules
+6 production-quality modules across 3 levels:
+- **Beginner**: Linear Regression, Decision Trees
+- **Intermediate**: Neural Networks, K-Means Clustering
+- **Advanced**: Random Forest, SVM
+
+### 💻 Code Lab — Real Python Execution
+- Write Python directly in the browser
+- Powered by **Piston API** — real sandboxed execution
+- AI-driven code reviews and mission hints via SYN_INTEL
+
+### 🕹️ Tactical Mini-Games
+- **KNN Matcher**: Visual cluster analysis and deployment units.
+- **Neural Playboard**: Interactive parameter tuning for deep learning models.
+
+### 🧪 Neural Simulations
+- **Spam Detection**: Real-time classification with feature analysis and confidence metrics.
+
+### 📊 XP & Progression
+- Tiered ranking from **Beginner** to **ML Expert**.
+- Dynamic Skill Radar telemetry.
 
 ---
 
-### 📡 TERMINAL HIERARCHY
+## 📡 TERMINAL HIERARCHY
 
 | Sector | Tactical Codename | Description | Visual Reference |
 | :--- | :--- | :--- | :--- |
@@ -81,13 +98,11 @@ vibeathon-teamalpha/
 
 ---
 
-### 💎 UI ARCHITECTURE (SNIPPETS)
+## 💎 UI ARCHITECTURE
 
 The platform achieves its **"Liquid Glass"** aesthetic through a multi-layered global CSS implementation.
 
-#### 1. Tactical Scanlines (Global Overlay)
-Fine-grain animated horizontal lines that provide a "Neural OS" texture.
-
+#### Tactical Scanlines (Global Overlay)
 ```css
 .scanlines {
   position: fixed;
@@ -105,88 +120,65 @@ Fine-grain animated horizontal lines that provide a "Neural OS" texture.
 }
 ```
 
-#### 2. Geometric Tactical Grid
-A broad background grid that provides geometric depth across all sectors.
+---
 
-```css
-.tactical-grid {
-  position: fixed;
-  inset: 0;
-  background-image: 
-    linear-gradient(to right, rgba(105, 246, 184, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(105, 246, 184, 0.02) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  z-index: 0;
-}
-```
+## 🛠️ TECH STACK
+
+| Layer | Technology | Specification |
+|-------|-----------|-----|
+| **Framework** | Next.js 14 | App Router, Server Components |
+| **Styling** | Tailwind CSS | Institutional "Liquid Glass" Theme |
+| **Auth & DB** | Supabase | PostgreSQL, Real-time persistence |
+| **AI Engine** | Gemini 2.0 Flash | Multimodal inference engine |
+| **Execution** | Piston API | Sandboxed Python 3.10 Runtime |
 
 ---
 
-### 📜 MISSION LOGS (DEVELOPMENT PHASES)
+## 🚀 GETTING STARTED
 
-#### 🟢 PHASE 1: INITIAL UPLINK (FOUNDATION)
-*   Established "Liquid Glass" design system and strict TypeScript protocols.
-*   Secured the perimeter with Supabase Authentication.
+1. **Install Dependencies**: `npm install`
+2. **Configure Environment**: Create `.env.local` with Supabase and Gemini keys.
+3. **Database Setup**: Run `./supabase/migrations/20240416_create_profiles.sql` in Supabase SQL editor.
+4. **Deploy Uplink**: `npm run dev`
+
+---
+
+## 📜 MISSION LOGS (DEVELOPMENT PHASES)
+
+#### 🟢 PHASE 1: INITIAL UPLINK
+- Established "Liquid Glass" design system and strict TypeScript protocols.
+- Secured the perimeter with Supabase Authentication.
 
 #### 🟡 PHASE 2: COMMAND CENTER (DASHBOARD)
-*   Finalized unified sidebar navigation and SkillRadar data visualization.
-*   Implemented real-time Leveling and XP tracking systems.
+- Finalized unified sidebar navigation and SkillRadar data visualization.
 
 #### 🔴 PHASE 3: ARMORY DEPLOYMENT (INTERACTIVE GAMES)
-*   Activated the KNN Visualizer and Neural Lite sandboxes for algorithmic stress-testing.
+- Activated the KNN Visualizer and Neural Lite sandboxes.
 
-#### 🔵 PHASE 4: SYN_INTEL ACTIVATION (AI LAB)
-*   Integrated sandboxed Python execution via Piston.
-*   Deployed multi-model AI logic for real-time code refactoring and mission hints.
-
-#### 🟣 PHASE 5: ASSESSMENT UNIT (QUIZ ARENA)
-*   Launched "Neural Assessment" with difficulty-tiered cognitive profiling.
-
-#### 🌌 PHASE 6: LIVE PERSISTENCE & GLOBAL UPLINK
-*   Migrated to full Supabase persistence for XP and mission logs.
-*   Deployed the Global Leaderboard for competitive operative ranking.
-*   Fixed mission progression loop and implemented auto-advancement in CodeLab.
+#### 🌌 PHASE 4: LIVE PERSISTENCE & GLOBAL UPLINK
+- Migrated to full Supabase persistence and Global Leaderboard.
 
 ---
 
-### 🔧 DEPLOYMENT MANUAL
+## 👥 TEAM
 
-1. **PROVISION DEPENDENCIES:**
-   ```bash
-   npm install
-   ```
+| Role | Person |
+|------|--------|
+| 🧠 AI/Backend | [Aditya](https://github.com/Aditya0292) |
+| 🎨 Frontend/UI | Team Alpha |
 
-2. **CONFIGURE ENCRYPTION (ENV):**
-   Create `.env.local` with your tactical credentials:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=...
-   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
-   GEMINI_API_KEY=...
-   OPENROUTER_API_KEY=...
-   GROK_API_KEY=...
-   ```
+---
 
-3. **DATABASE INITIALIZATION:**
-   Run the tactical SQL migration found in:  
-   `./supabase/migrations/20240416_create_profiles.sql`  
-   in your Supabase SQL Editor.
+## 📄 LICENSE
 
-4. **ESTABLISH CONNECTION:**
-   ```bash
-   npm run dev
-   ```
-   *Uplink target: http://localhost:3000*
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 
 <div align="center">
 
-**[ MISSION_STATUS: OPERATIONAL ]**  
-*UPLINK: SECURE // OPERATOR: VERIFIED // MISSION_READY*
+**Built with 🧠 at VIBETHON · Grown with ❤️ for the community**
 
----
-
-*Built with precision for Vibeathon Team Alpha.*
+*"Learn AI. Break AI. Become AI."*
 
 </div>
