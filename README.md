@@ -24,7 +24,7 @@
 
 <br/>
 
-> **🏆 3rd Place — VIBETHON AI-Powered Coding Hackathon, DYPCET Kolhapur**  
+> **🏆 3rd Place — VIBETHON AI-Powered Coding Hackathon**  
 > *Built in 4 hours. Now built for the world.*
 
 <br/>
@@ -37,7 +37,7 @@
 
 ## 🛰️ STRATEGIC OVERVIEW
 
-Most people learn AI/ML by reading. **NeuroFlow makes you feel it.**
+Most people learn AI/ML by reading or tradional way. **NeuroFlow makes you feel it.**
 
 NeuroFlow is a fully interactive, AI-powered learning platform where you don't just consume content — you **run real Python code**, **play games that teach algorithms**, **break ML pipelines and fix them**, and get **instant AI feedback** on everything you do.
 
